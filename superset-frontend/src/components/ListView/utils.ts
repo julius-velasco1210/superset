@@ -201,6 +201,7 @@ interface UseListViewConfig {
   };
   renderCard?: boolean;
   defaultViewMode?: ViewModeType;
+  forceViewMode?: ViewModeType;
 }
 
 export function useListViewState({
@@ -215,6 +216,7 @@ export function useListViewState({
   bulkSelectColumnConfig,
   renderCard = false,
   defaultViewMode = 'card',
+  forceViewMode,
 }: UseListViewConfig) {
   const [query, setQuery] = useQueryParams({
     filters: RisonParam,
@@ -242,9 +244,30 @@ export function useListViewState({
   };
 
   const [viewMode, setViewMode] = useState<ViewModeType>(
-    (query.viewMode as ViewModeType) ||
+    // forceViewMode overrides everything (used for mobile)
+    forceViewMode ||
+      (query.viewMode as ViewModeType) ||
       (renderCard ? defaultViewMode : 'table'),
   );
+
+  // Update viewMode when forceViewMode changes (e.g., screen resize). When
+  // forceViewMode is cleared (e.g., resizing from mobile back to desktop),
+  // fall back to the persisted query param or the default view instead of
+  // leaving the view stuck in the previously forced mode.
+  useEffect(() => {
+    if (forceViewMode) {
+      setViewMode(forceViewMode);
+    } else {
+      setViewMode(
+        (query.viewMode as ViewModeType) ||
+          (renderCard ? defaultViewMode : 'table'),
+      );
+    }
+    // Only react to forceViewMode transitions; query.viewMode, renderCard, and
+    // defaultViewMode are read for their current values, not to retrigger
+    // this effect on every change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [forceViewMode]);
 
   const columnsWithSelect = useMemo(() => {
     // add exact filter type so filters with falsy values are not filtered out

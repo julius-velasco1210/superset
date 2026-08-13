@@ -26,6 +26,7 @@ import {
   BottomResizeHandle,
   BottomRightResizeHandle,
 } from './ResizableHandle';
+import { isMobileConsumptionEnabled } from 'src/hooks/useIsMobile';
 import resizableConfig from '../../util/resizableConfig';
 import { GRID_BASE_UNIT, GRID_GUTTER_SIZE } from '../../util/constants';
 
@@ -147,6 +148,21 @@ const StyledResizable = styled(Resizable)`
   & .resizable-container-handle--bottom {
     bottom: 0 !important;
   }
+
+  /* Mobile consumption mode stacks all grid components full-width.
+     !important is required to beat re-resizable's inline width, which is
+     sized for the desktop grid (Markdown, Column, and other non-chart
+     components don't get the JS-level mobile width that ChartHolder
+     computes). */
+  ${({ theme }) =>
+    isMobileConsumptionEnabled() &&
+    css`
+      @media (max-width: ${theme.screenSMMax}px) {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+      }
+    `}
 `;
 
 export default function ResizableContainer({

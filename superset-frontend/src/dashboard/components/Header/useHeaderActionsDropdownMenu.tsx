@@ -55,6 +55,10 @@ export const useHeaderActionsMenu = ({
   userCanCurate,
   userCanExport,
   isLoading,
+  isMobile,
+  isStarred,
+  isPublished,
+  saveFaveStar,
   lastModifiedTime,
   addSuccessToast,
   addDangerToast,
@@ -111,6 +115,11 @@ export const useHeaderActionsMenu = ({
         case MenuKeys.ManageEmbedded:
           manageEmbedded();
           break;
+        case 'toggle-favorite':
+          if (saveFaveStar && isStarred !== undefined) {
+            saveFaveStar(dashboardId, isStarred);
+          }
+          break;
         default:
           break;
       }
@@ -122,6 +131,9 @@ export const useHeaderActionsMenu = ({
       showPropertiesModal,
       showRefreshModal,
       manageEmbedded,
+      saveFaveStar,
+      dashboardId,
+      isStarred,
       history,
     ],
   );
@@ -193,6 +205,57 @@ export const useHeaderActionsMenu = ({
 
     const menuItems: MenuItem[] = [];
 
+    // Mobile-only: show dashboard info items in menu
+    if (isMobile && !editMode) {
+      // Favorite toggle
+      if (saveFaveStar) {
+        menuItems.push({
+          key: 'toggle-favorite',
+          label: isStarred ? t('Remove from favorites') : t('Add to favorites'),
+        });
+      }
+
+      // Published status
+      menuItems.push({
+        key: 'status-info',
+        label: isPublished ? t('Status: Published') : t('Status: Draft'),
+        disabled: true,
+      });
+
+      // Editor info
+      const editorNames = dashboardInfo?.editors?.length
+        ? dashboardInfo.editors
+            .map((editor: { label?: string }) => editor.label)
+            .filter(Boolean)
+            .join(', ')
+        : t('None');
+      menuItems.push({
+        key: 'owner-info',
+        label: t('Owner: %(names)s', { names: editorNames }),
+        disabled: true,
+      });
+
+      // Last modified
+      const changedBy = dashboardInfo?.changed_by;
+      const modifiedBy =
+        changedBy?.full_name ||
+        [changedBy?.first_name, changedBy?.last_name]
+          .filter(Boolean)
+          .join(' ') ||
+        t('Not available');
+      const modifiedDate = dashboardInfo?.changed_on_delta_humanized || '';
+      menuItems.push({
+        key: 'modified-info',
+        label: t('Modified %(date)s by %(user)s', {
+          date: modifiedDate,
+          user: modifiedBy,
+        }),
+        disabled: true,
+      });
+
+      menuItems.push({ type: 'divider' });
+    }
+
     // Refresh dashboard
     if (!editMode) {
       menuItems.push({
@@ -212,8 +275,8 @@ export const useHeaderActionsMenu = ({
       });
     }
 
-    // Toggle fullscreen
-    if (!editMode && !isEmbedded) {
+    // Toggle fullscreen (hide on mobile)
+    if (!editMode && !isEmbedded && !isMobile) {
       menuItems.push({
         key: MenuKeys.ToggleFullscreen,
         label: getUrlParam(URL_PARAMS.standalone)
@@ -233,8 +296,8 @@ export const useHeaderActionsMenu = ({
     // Divider
     menuItems.push({ type: 'divider' });
 
-    // Save as
-    if (userCanSave) {
+    // Save as (authoring action, hidden on mobile consumption-only menu)
+    if (userCanSave && !isMobile) {
       menuItems.push(
         createModalMenuItem(
           MenuKeys.SaveModal,
@@ -271,8 +334,8 @@ export const useHeaderActionsMenu = ({
       menuItems.push(shareMenuItems);
     }
 
-    // Embed dashboard
-    if (!editMode && userCanCurate) {
+    // Embed dashboard (authoring action, hidden on mobile consumption-only menu)
+    if (!editMode && userCanCurate && !isMobile) {
       menuItems.push({
         key: MenuKeys.ManageEmbedded,
         label: t('Embed dashboard'),
@@ -281,15 +344,15 @@ export const useHeaderActionsMenu = ({
 
     // Only add divider if there are items after it
     const hasItemsAfterDivider =
-      (!editMode && reportMenuItem) ||
+      (!editMode && reportMenuItem && !isMobile) ||
       (editMode && !isEmpty(dashboardInfo?.metadata?.filter_scopes));
 
     if (hasItemsAfterDivider) {
       menuItems.push({ type: 'divider' });
     }
 
-    // Report dropdown
-    if (!editMode && reportMenuItem) {
+    // Report dropdown (hide on mobile)
+    if (!editMode && reportMenuItem && !isMobile) {
       menuItems.push(reportMenuItem);
     }
 
@@ -327,11 +390,15 @@ export const useHeaderActionsMenu = ({
     expandedSlices,
     handleMenuClick,
     isLoading,
+    isMobile,
+    isPublished,
+    isStarred,
     lastModifiedTime,
     layout,
     onSave,
     refreshFrequency,
     reportMenuItem,
+    saveFaveStar,
     shareMenuItems,
     shouldPersistRefreshFrequency,
     userCanCurate,

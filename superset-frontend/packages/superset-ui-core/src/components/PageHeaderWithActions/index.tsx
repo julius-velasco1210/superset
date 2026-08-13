@@ -20,6 +20,7 @@ import { ReactNode, ReactElement } from 'react';
 import { t } from '@apache-superset/core/translation';
 import { css, SupersetTheme, useTheme } from '@apache-superset/core/theme';
 import { Icons } from '@superset-ui/core/components/Icons';
+import { FeatureFlag, isFeatureEnabled } from '../../utils/featureFlags';
 import type { DropdownProps } from '../Dropdown/types';
 import type { TooltipPlacement } from '../Tooltip/types';
 import type { CertifiedBadgeProps } from '../CertifiedBadge/types';
@@ -81,6 +82,20 @@ const headerStyles = (theme: SupersetTheme) => css`
     display: flex;
     align-items: center;
   }
+
+  /* Mobile consumption mode: center the title between left/right panels */
+  ${
+    isFeatureEnabled(FeatureFlag.MobileConsumptionMode) &&
+    css`
+      @media (max-width: ${theme.screenSMMax}px) {
+        .title-panel {
+          flex: 1;
+          justify-content: center;
+          margin-right: 0;
+        }
+      }
+    `
+  }
 `;
 
 const buttonsStyles = (theme: SupersetTheme) => css`
@@ -108,6 +123,7 @@ export type PageHeaderWithActionsProps = {
   showFaveStar: boolean;
   showMenuDropdown?: boolean;
   faveStarProps: FaveStarProps;
+  leftPanelItems?: ReactNode;
   titlePanelAdditionalItems: ReactNode;
   rightPanelAdditionalItems: ReactNode;
   additionalActionsMenu: ReactElement;
@@ -124,6 +140,7 @@ export const PageHeaderWithActions = ({
   certificatiedBadgeProps,
   showFaveStar,
   faveStarProps,
+  leftPanelItems,
   titlePanelAdditionalItems,
   rightPanelAdditionalItems,
   additionalActionsMenu,
@@ -134,6 +151,7 @@ export const PageHeaderWithActions = ({
   const theme = useTheme();
   return (
     <div css={headerStyles} className="header-with-actions">
+      {leftPanelItems}
       <div className="title-panel">
         <DynamicEditableTitle {...editableTitleProps} />
         {showTitlePanelItems && (

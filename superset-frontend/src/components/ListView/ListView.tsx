@@ -27,6 +27,7 @@ import {
   Button,
   Tooltip,
   Checkbox,
+  Drawer,
   Icons,
   EmptyState,
   Loading,
@@ -196,6 +197,30 @@ const EmptyWrapper = styled.div`
   `}
 `;
 
+const MobileFilterDrawerContent = styled.div`
+  ${({ theme }) => `
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.sizeUnit * 4}px;
+    padding: ${theme.sizeUnit * 2}px;
+
+    /* Make filter inputs stack vertically and full-width */
+    > * {
+      width: 100%;
+    }
+
+    /* Override inline filter styling for vertical layout */
+    .filter-container {
+      width: 100%;
+    }
+
+    input[type="text"],
+    .ant-select {
+      width: 100% !important;
+    }
+  `}
+`;
+
 const ViewModeToggle = ({
   mode,
   setMode,
@@ -259,12 +284,19 @@ export interface ListViewProps<T extends object = any> {
   renderCard?: (row: T & { loading: boolean }) => ReactNode;
   cardSortSelectOptions?: Array<CardSortSelectOption>;
   defaultViewMode?: ViewModeType;
+  forceViewMode?: ViewModeType;
   highlightRowId?: number;
   showThumbnails?: boolean;
   emptyState?: EmptyStateProps;
   columnsForWrapText?: string[];
   enableBulkTag?: boolean;
   bulkTagResourceName?: string;
+  /** Whether mobile filters drawer is open (controlled externally) */
+  mobileFiltersOpen?: boolean;
+  /** Callback to set mobile filters drawer open state */
+  setMobileFiltersOpen?: (open: boolean) => void;
+  /** Title for the mobile filters drawer */
+  mobileFiltersDrawerTitle?: string;
 }
 
 export function ListView<T extends object = any>({
@@ -286,6 +318,7 @@ export function ListView<T extends object = any>({
   showThumbnails,
   cardSortSelectOptions,
   defaultViewMode = 'card',
+  forceViewMode,
   highlightRowId,
   emptyState,
   columnsForWrapText,
@@ -293,6 +326,9 @@ export function ListView<T extends object = any>({
   bulkTagResourceName,
   addSuccessToast,
   addDangerToast,
+  mobileFiltersOpen = false,
+  setMobileFiltersOpen,
+  mobileFiltersDrawerTitle,
 }: ListViewProps<T>) {
   const {
     getTableProps,
@@ -321,6 +357,7 @@ export function ListView<T extends object = any>({
     initialFilters: filters,
     renderCard: Boolean(renderCard),
     defaultViewMode,
+    forceViewMode,
   });
   const allowBulkTagActions = bulkTagResourceName && enableBulkTag;
   const filterable = Boolean(filters.length);
@@ -375,11 +412,15 @@ export function ListView<T extends object = any>({
       )}
       <div data-test={className} className={`superset-list-view ${className} `}>
         <div className="header">
-          {cardViewEnabled && (
+          {cardViewEnabled && !forceViewMode && (
             <ViewModeToggle mode={viewMode} setMode={setViewMode} />
           )}
           <div className="controls" data-test="filters-select">
-            {filterable && (
+            {/* When a mobile drawer callback is provided, filters and sort
+                render inside the drawer instead of inline. Only one
+                FilterControls instance is ever mounted, so filtersRef and
+                filterControlsRef always point at the visible instance. */}
+            {filterable && !setMobileFiltersOpen && (
               <FilterControls
                 ref={filterControlsRef}
                 filters={filters}
@@ -387,13 +428,15 @@ export function ListView<T extends object = any>({
                 updateFilterValue={applyFilterValue}
               />
             )}
-            {viewMode === 'card' && cardSortSelectOptions && (
-              <CardSortSelect
-                initialSort={sortBy}
-                onChange={(value: SortColumn[]) => setSortBy(value)}
-                options={cardSortSelectOptions}
-              />
-            )}
+            {viewMode === 'card' &&
+              cardSortSelectOptions &&
+              !setMobileFiltersOpen && (
+                <CardSortSelect
+                  initialSort={sortBy}
+                  onChange={(value: SortColumn[]) => setSortBy(value)}
+                  options={cardSortSelectOptions}
+                />
+              )}
           </div>
         </div>
         <div className={`body ${rows.length === 0 ? 'empty' : ''} `}>
@@ -551,6 +594,46 @@ export function ListView<T extends object = any>({
           )}
         </div>
       </div>
+
+      {/* Mobile filter drawer */}
+      {filterable && setMobileFiltersOpen && (
+        <Drawer
+          title={mobileFiltersDrawerTitle || t('Search')}
+          placement="left"
+          onClose={() => setMobileFiltersOpen(false)}
+          open={mobileFiltersOpen}
+          width={300}
+        >
+          <MobileFilterDrawerContent>
+            <FilterControls
+              ref={filterControlsRef}
+              filters={filters}
+              internalFilters={internalFilters}
+              updateFilterValue={applyFilterValue}
+            />
+            {viewMode === 'card' && cardSortSelectOptions && (
+              <CardSortSelect
+                initialSort={sortBy}
+                onChange={(value: SortColumn[]) => setSortBy(value)}
+                options={cardSortSelectOptions}
+              />
+            )}
+            <Tooltip
+              title={!hasActiveFilters ? t('No filters applied') : undefined}
+            >
+              <span>
+                <ClearAllButton
+                  type="button"
+                  disabled={!hasActiveFilters}
+                  onClick={() => filterControlsRef.current?.clearFilters()}
+                >
+                  {t('Clear all')}
+                </ClearAllButton>
+              </span>
+            </Tooltip>
+          </MobileFilterDrawerContent>
+        </Drawer>
+      )}
     </ListViewStyles>
   );
 }

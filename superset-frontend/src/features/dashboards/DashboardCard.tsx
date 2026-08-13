@@ -37,6 +37,7 @@ import { Icons } from '@superset-ui/core/components/Icons';
 import { Dashboard } from 'src/views/CRUD/types';
 import { assetUrl } from 'src/utils/assetUrl';
 import { FacePile } from 'src/components';
+import { useIsMobile } from 'src/hooks/useIsMobile';
 
 interface DashboardCardProps {
   isChart?: boolean;
@@ -65,6 +66,8 @@ function DashboardCard({
   handleBulkDashboardExport,
   onDelete,
 }: DashboardCardProps) {
+  const isMobile = useIsMobile();
+
   const history = useHistory();
   const canEdit = hasPerm('can_write');
   const canDelete = hasPerm('can_write');
@@ -191,11 +194,13 @@ function DashboardCard({
                 isStarred={favoriteStatus}
               />
             )}
-            <Dropdown menu={{ items: menuItems }} trigger={['hover', 'click']}>
-              <Button buttonSize="xsmall" buttonStyle="link">
-                <Icons.MoreOutlined iconSize="xl" />
-              </Button>
-            </Dropdown>
+            {!isMobile && (
+              <Dropdown menu={{ items: menuItems }} trigger={['hover', 'click']}>
+                <Button buttonSize="xsmall" buttonStyle="link">
+                  <Icons.MoreOutlined iconSize="xl" />
+                </Button>
+              </Dropdown>
+            )}
           </ListViewCard.Actions>
         }
       />

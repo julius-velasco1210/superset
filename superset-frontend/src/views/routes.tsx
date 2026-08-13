@@ -192,32 +192,44 @@ type Routes = {
   Component: ComponentType;
   Fallback?: ComponentType;
   props?: ComponentProps<any>;
+  /**
+   * Marks a route as usable in the mobile consumption-only experience.
+   * Routes without this flag show the MobileUnsupported screen on small
+   * screens when MOBILE_CONSUMPTION_MODE is enabled.
+   */
+  mobileSupported?: boolean;
 }[];
 
 export const routes: Routes = [
   {
     path: '/redirect/',
     Component: RedirectWarning,
+    mobileSupported: true,
   },
   {
     path: '/login/',
     Component: Login,
+    mobileSupported: true,
   },
   {
     path: '/register/activation/:activationHash',
     Component: Register,
+    mobileSupported: true,
   },
   {
     path: '/register/',
     Component: Register,
+    mobileSupported: true,
   },
   {
     path: '/logout/',
     Component: Login,
+    mobileSupported: true,
   },
   {
     path: '/superset/welcome/',
     Component: Home,
+    mobileSupported: true,
   },
   {
     path: '/superset/file-handler',
@@ -226,10 +238,12 @@ export const routes: Routes = [
   {
     path: '/dashboard/list/',
     Component: DashboardList,
+    mobileSupported: true,
   },
   {
     path: '/superset/dashboard/:idOrSlug/',
     Component: Dashboard,
+    mobileSupported: true,
   },
   {
     path: '/chart/add',
@@ -321,7 +335,7 @@ export const routes: Routes = [
     path: '/sqllab/',
     Component: SqlLab,
   },
-  { path: '/user_info/', Component: UserInfo },
+  { path: '/user_info/', Component: UserInfo, mobileSupported: true },
   {
     path: '/actionlog/list',
     Component: ActionLogList,

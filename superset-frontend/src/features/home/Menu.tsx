@@ -28,6 +28,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { Icons } from '@superset-ui/core/components/Icons';
 import { Typography } from '@superset-ui/core/components/Typography';
 import { useUiConfig } from 'src/components/UiConfigContext';
+import { useIsMobile } from 'src/hooks/useIsMobile';
 import { URL_PARAMS } from 'src/constants';
 import {
   MenuObjectChildProps,
@@ -197,6 +198,7 @@ export function Menu({
   isFrontendRoute = () => false,
 }: MenuProps) {
   const screens = useBreakpoint();
+  const isMobile = useIsMobile();
   const uiConfig = useUiConfig();
   const theme = useTheme();
 
@@ -336,7 +338,18 @@ export function Menu({
   return (
     <StyledHeader className="top" id="main-menu" role="navigation">
       <StyledRow>
-        <StyledCol md={16} xs={24}>
+        {/* Mobile: left placeholder for future icon */}
+        {isMobile && <Col xs={4} />}
+        <StyledCol
+          md={16}
+          xs={isMobile ? 16 : 24}
+          css={
+            isMobile &&
+            css`
+              justify-content: center;
+            `
+          }
+        >
           <Tooltip
             id="brand-tooltip"
             placement="bottomLeft"
@@ -350,39 +363,43 @@ export function Menu({
               <span>{brand.text}</span>
             </StyledBrandText>
           )}
-          <StyledMainNav
-            mode={screens.md ? 'horizontal' : 'inline'}
-            data-test="navbar-top"
-            className="main-nav"
-            selectedKeys={activeTabs}
-            disabledOverflow
-            items={menu.map(item => {
-              const props = {
-                ...item,
-                isFrontendRoute: isFrontendRoute(item.url),
-                childs: item.childs?.map(c => {
-                  if (typeof c === 'string') {
-                    return c;
-                  }
+          {/* Consumption mode: hide nav items on mobile (drawer holds them) */}
+          {!isMobile && (
+            <StyledMainNav
+              mode={screens.md ? 'horizontal' : 'inline'}
+              data-test="navbar-top"
+              className="main-nav"
+              selectedKeys={activeTabs}
+              disabledOverflow
+              items={menu.map(item => {
+                const props = {
+                  ...item,
+                  isFrontendRoute: isFrontendRoute(item.url),
+                  childs: item.childs?.map(c => {
+                    if (typeof c === 'string') {
+                      return c;
+                    }
 
-                  return {
-                    ...c,
-                    isFrontendRoute: isFrontendRoute(c.url),
-                  };
-                }),
-              };
+                    return {
+                      ...c,
+                      isFrontendRoute: isFrontendRoute(c.url),
+                    };
+                  }),
+                };
 
-              return buildMenuItem(props);
-            })}
-          />
+                return buildMenuItem(props);
+              })}
+            />
+          )}
         </StyledCol>
-        <Col md={8} xs={24}>
+        <Col md={8} xs={isMobile ? 4 : 24}>
           <RightMenu
-            align={screens.md ? 'flex-end' : 'flex-start'}
+            align={screens.md || isMobile ? 'flex-end' : 'flex-start'}
             settings={settings}
             navbarRight={navbarRight}
             isFrontendRoute={isFrontendRoute}
             environmentTag={environmentTag}
+            menu={menu}
           />
         </Col>
       </StyledRow>
