@@ -58,6 +58,7 @@ import {
 import FilterBar from 'src/dashboard/components/nativeFilters/FilterBar';
 import { useUiConfig } from 'src/components/UiConfigContext';
 import { isMobileConsumptionEnabled, useIsMobile } from 'src/hooks/useIsMobile';
+import { isEmbedded } from 'src/dashboard/util/isEmbedded';
 import ResizableSidebar from 'src/components/ResizableSidebar';
 import {
   BUILDER_SIDEPANEL_WIDTH,
@@ -381,7 +382,8 @@ const DashboardBuilder = () => {
   // docs already promise for embedded dashboards.
   const standaloneMode = getUrlParam(URL_PARAMS.standalone);
   const isNotMobile =
-    !useIsMobile() || standaloneMode !== DashboardStandaloneMode.None;
+    !useIsMobile() ||
+    (!isEmbedded() && standaloneMode !== DashboardStandaloneMode.None);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   // Reset the drawer's open state when leaving mobile mode so it doesn't
