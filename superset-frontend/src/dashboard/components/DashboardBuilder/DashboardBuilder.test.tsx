@@ -33,7 +33,6 @@ import {
   CLOSED_FILTER_BAR_WIDTH,
 } from 'src/dashboard/constants';
 import DashboardBuilder from 'src/dashboard/components/DashboardBuilder/DashboardBuilder';
-import { useIsMobile } from 'src/hooks/useIsMobile';
 import useStoredSidebarWidth from 'src/components/ResizableSidebar/useStoredSidebarWidth';
 import {
   fetchFaveStar,

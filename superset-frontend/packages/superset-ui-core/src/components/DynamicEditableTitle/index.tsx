@@ -105,21 +105,6 @@ export const DynamicEditableTitle = memo(
       }
     }, [currentTitle, placeholder, sizerRef]);
 
-    // Webfont metrics differ from the fallback font's, so a measurement
-    // taken before fonts finish loading under- or over-sizes the input.
-    // Re-measure once all fonts are ready.
-    useEffect(() => {
-      let cancelled = false;
-      document.fonts?.ready?.then(() => {
-        if (!cancelled && sizerRef.current) {
-          setInputWidth(sizerRef.current.offsetWidth);
-        }
-      });
-      return () => {
-        cancelled = true;
-      };
-    }, []);
-
     useEffect(() => {
       const inputElement = sizerRef.current?.input;
 

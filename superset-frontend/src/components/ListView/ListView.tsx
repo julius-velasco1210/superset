@@ -618,19 +618,6 @@ export function ListView<T extends object = any>({
                 options={cardSortSelectOptions}
               />
             )}
-            <Tooltip
-              title={!hasActiveFilters ? t('No filters applied') : undefined}
-            >
-              <span>
-                <ClearAllButton
-                  type="button"
-                  disabled={!hasActiveFilters}
-                  onClick={() => filterControlsRef.current?.clearFilters()}
-                >
-                  {t('Clear all')}
-                </ClearAllButton>
-              </span>
-            </Tooltip>
           </MobileFilterDrawerContent>
         </Drawer>
       )}

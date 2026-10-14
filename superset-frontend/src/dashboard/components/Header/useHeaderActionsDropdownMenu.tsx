@@ -223,9 +223,13 @@ export const useHeaderActionsMenu = ({
       });
 
       // Editor info
-      const editorNames = dashboardInfo?.editors?.length
-        ? dashboardInfo.editors
-            .map((editor: { label?: string }) => editor.label)
+      const editorNames = dashboardInfo?.owners?.length
+        ? dashboardInfo.owners
+            .map(
+              owner =>
+                owner.full_name ||
+                [owner.first_name, owner.last_name].filter(Boolean).join(' '),
+            )
             .filter(Boolean)
             .join(', ')
         : t('None');

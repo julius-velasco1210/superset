@@ -19,10 +19,7 @@
 // Imported first: loading this before 'spec/helpers/testing-library' or
 // '@superset-ui/core' ensures mockAntdWithDesktopBreakpoint is defined
 // before anything transitively requires (and thus mocks) 'antd'.
-import {
-  mockAntdWithDesktopBreakpoint,
-  mockMobileMatchMedia,
-} from 'spec/helpers/mobileTestUtils';
+import { mockAntdWithDesktopBreakpoint } from 'spec/helpers/mobileTestUtils';
 import * as reactRedux from 'react-redux';
 import fetchMock from 'fetch-mock';
 import {
