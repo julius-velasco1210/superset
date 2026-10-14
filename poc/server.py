@@ -14,7 +14,7 @@ SUPERSET_URL = os.environ.get("SUPERSET_URL", "http://localhost:8088")
 # Docker dev defaults; dummy POC data only.
 SUPERSET_USER = os.environ.get("SUPERSET_USER", "admin")
 SUPERSET_PASSWORD = os.environ.get("SUPERSET_PASSWORD", "admin")
-EMBED_UUID = os.environ.get("EMBED_UUID", "dc505710-4710-4b63-ab62-f768b0f4ace9")
+EMBED_UUID = os.environ.get("EMBED_UUID", "972c2722-ae3a-4344-ae77-072a582825be")
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
